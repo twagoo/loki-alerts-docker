@@ -5,21 +5,35 @@ services:
     image: prom/alertmanager
     container_name: alertmanager
     command:
-      - '--config.file=/etc/alertmanager/config.yml'
+      - '--log.level=debug'
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
       - '--storage.path=/alertmanager'
     volumes:
-      - ./config/alertmanager.yml:/etc/alertmanager/config.yml
+      - ./config/alertmanager.yml:/etc/alertmanager/alertmanager.yml
     ports:
       - 9093:9093
     networks:
       - public
+      
+  webhook:
+   image: mendhak/http-https-echo:16
+   container_name: webhook
+   environment:
+     - HTTP_PORT=8686
+     - HTTPS_PORT=8646
+   ports:
+     - 8686:8686 
+     - 8646:8646
+   networks:
+     - public
 
   loki:
-   image: grafana/loki:2.0.0-amd64
+   image: grafana/loki:2.0.1-amd64
    container_name: loki
    volumes:
      - ./config/loki.yml:/etc/config/loki.yml
      - ./rules/demo/rules.yml:/etc/loki/rules/demo/rules.yml
+     - ./loki-temp:/tmp/loki
    entrypoint:
      - /usr/bin/loki
      - -config.file=/etc/config/loki.yml
@@ -31,7 +45,7 @@ services:
       - public
 
   grafana:
-    image: grafana/grafana:7.2.2
+    image: grafana/grafana:7.3.6
     container_name: grafana
     volumes:
       - ./config/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
