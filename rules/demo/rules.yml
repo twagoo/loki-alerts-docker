@@ -5,7 +5,7 @@ groups:
         expr: |
           sum by (job, compose_service)
             (rate({job="dockerlogs"}[1m]))
-            > 60
+            > 10
         for: 1m
         labels:
             severity: warning
